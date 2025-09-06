@@ -35,11 +35,7 @@ const schema = yup.object({
   label: yup.string().required('Label is required'),
   options: yup
     .array()
-    .of(
-      yup.object({
-        name: yup.string().required('Option is required'),
-      })
-    )
+    .of(yup.object({ name: yup.string().required('Option is required') }))
     .min(1, 'At least one option is required')
     .required(),
   isRequired: yup.boolean().required(),

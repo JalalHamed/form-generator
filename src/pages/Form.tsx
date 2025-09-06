@@ -6,7 +6,6 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  IconButton,
   Stack,
   TextField,
   Typography,
@@ -20,17 +19,33 @@ export default function FormPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<Form | null>(null);
 
+  const [values, setValues] = useState<Record<string, unknown>>({});
+
   useEffect(() => {
     const stored = localStorage.getItem('forms');
     if (stored) {
       const forms: Form[] = JSON.parse(stored);
       const found = forms.find((f) => f.id === id);
-      if (found) setForm(found);
-      else navigate('/');
+      if (found) {
+        setForm(found);
+
+        const initialValues: Record<string, unknown> = {};
+        found.elements.forEach((el) => {
+          if (el.type === 'text') initialValues[el.id] = '';
+          if (el.type === 'checkbox') {
+            el.choices?.forEach((c) => {
+              initialValues[c.id] = false;
+            });
+          }
+        });
+        setValues(initialValues);
+      } else {
+        navigate('/');
+      }
     }
   }, [id, navigate]);
 
-  const handleDelete = () => {
+  const handleDeleteForm = () => {
     if (!form) return;
     const stored = localStorage.getItem('forms');
     if (stored) {
@@ -41,9 +56,19 @@ export default function FormPage() {
     navigate('/');
   };
 
-  const handleEdit = () => {
+  const handleEditForm = () => {
     if (!form) return;
     navigate(`/generate-form?id=${form.id}`);
+  };
+
+  const handleValueChange = (id: string, value: unknown) => {
+    setValues((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const shouldRender = (el: Element) => {
+    if (!el.condition) return true;
+    const targetValue = values[el.condition.targetElementId];
+    return targetValue === el.condition.valueToMatch;
   };
 
   if (!form) return null;
@@ -58,14 +83,22 @@ export default function FormPage() {
         >
           Back
         </Button>
-
         <Stack direction='row' gap={1}>
-          <IconButton color='primary' onClick={handleEdit}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color='error' onClick={handleDelete}>
-            <DeleteIcon />
-          </IconButton>
+          <Button
+            variant='outlined'
+            startIcon={<EditIcon />}
+            onClick={handleEditForm}
+          >
+            Edit
+          </Button>
+          <Button
+            variant='outlined'
+            startIcon={<DeleteIcon />}
+            color='error'
+            onClick={handleDeleteForm}
+          >
+            Delete
+          </Button>
         </Stack>
       </Stack>
 
@@ -78,9 +111,19 @@ export default function FormPage() {
       >
         <Typography fontWeight='bold'>{form.name}</Typography>
 
-        {form.elements.map((el: Element) => {
+        {form.elements.map((el) => {
+          if (!shouldRender(el)) return null;
+
           if (el.type === 'text') {
-            return <TextField key={el.id} label={el.label} fullWidth />;
+            return (
+              <TextField
+                key={el.id}
+                label={el.label}
+                value={values[el.id] || ''}
+                onChange={(e) => handleValueChange(el.id, e.target.value)}
+                fullWidth
+              />
+            );
           }
 
           if (el.type === 'checkbox') {
@@ -91,7 +134,14 @@ export default function FormPage() {
                   {el.choices?.map((choice) => (
                     <FormControlLabel
                       key={choice.id}
-                      control={<Checkbox />}
+                      control={
+                        <Checkbox
+                          checked={Boolean(values[choice.id])}
+                          onChange={(e) =>
+                            handleValueChange(choice.id, e.target.checked)
+                          }
+                        />
+                      }
                       label={choice.name}
                     />
                   ))}

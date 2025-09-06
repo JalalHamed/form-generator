@@ -11,80 +11,88 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useFormStore } from 'stores';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
+import { useFormStore } from '../../stores';
+import type { Element } from '../../types';
 
 interface AddTextFieldProps {
   open: boolean;
   handleClose: () => void;
 }
 
-interface FormValues {
+interface TextFieldFormValues {
   label: string;
-  required: boolean;
+  isRequired: boolean;
+  conditionTarget?: string;
+  conditionValue?: string;
 }
 
 const schema = yup.object({
   label: yup.string().required('Label is required'),
-  required: yup.boolean().default(false),
+  isRequired: yup.boolean().required(),
 });
 
-export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
+export default function AddTextFieldDialog({
+  open,
+  handleClose,
+}: AddTextFieldProps) {
   const addElement = useFormStore((state) => state.addElement);
+  const elements = useFormStore((state) => state.elements);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const [showConditionFields, setShowConditionFields] = useState(false);
+
+  const { control, handleSubmit, reset } = useForm<TextFieldFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      label: '',
-      required: false,
-    },
+    defaultValues: { label: '', isRequired: false },
   });
 
-  const onSubmit = (data: FormValues) => {
-    addElement({
+  const onSubmit = (data: TextFieldFormValues) => {
+    const newElement: Element = {
       id: uuid(),
       type: 'text',
       label: data.label,
-      isRequired: data.required,
-    });
+      isRequired: data.isRequired,
+      condition: data.conditionTarget
+        ? {
+            targetElementId: data.conditionTarget,
+            valueToMatch: data.conditionValue,
+          }
+        : undefined,
+    };
+
+    addElement(newElement);
     reset();
+    setShowConditionFields(false);
     handleClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth>
-      <DialogTitle>Add Text Field</DialogTitle>
-
       <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogTitle>Add Text Field</DialogTitle>
+
         <DialogContent dividers>
           <Stack gap={2}>
             <Controller
               name='label'
               control={control}
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <TextField
                   {...field}
                   label='Label'
                   autoFocus
-                  error={!!errors.label}
-                  helperText={errors.label?.message}
-                  inputRef={(input) => {
-                    if (input) input.focus();
-                  }}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
                 />
               )}
             />
 
             <FormGroup>
               <Controller
-                name='required'
+                name='isRequired'
                 control={control}
                 render={({ field }) => (
                   <FormControlLabel
@@ -99,6 +107,47 @@ export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
                 )}
               />
             </FormGroup>
+
+            {elements.length > 0 && (
+              <Button
+                variant='outlined'
+                onClick={() => setShowConditionFields(!showConditionFields)}
+              >
+                Conditional Rendering
+              </Button>
+            )}
+
+            {showConditionFields && (
+              <>
+                <Controller
+                  name='conditionTarget'
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label='Based on'
+                      {...field}
+                      SelectProps={{ native: true }}
+                    >
+                      <option value=''>Select field</option>
+                      {elements.map((el) => (
+                        <option key={el.id} value={el.id}>
+                          {el.label}
+                        </option>
+                      ))}
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  name='conditionValue'
+                  control={control}
+                  render={({ field }) => (
+                    <TextField {...field} label='If value equals to' />
+                  )}
+                />
+              </>
+            )}
           </Stack>
         </DialogContent>
 
@@ -106,13 +155,13 @@ export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
           <Button
             onClick={() => {
               reset();
+              setShowConditionFields(false);
               handleClose();
             }}
-            sx={{ flexGrow: 1 }}
           >
             Cancel
           </Button>
-          <Button type='submit' variant='contained' sx={{ flexGrow: 3 }}>
+          <Button type='submit' variant='contained'>
             Add
           </Button>
         </DialogActions>

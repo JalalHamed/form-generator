@@ -8,16 +8,34 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useState } from 'react';
 import { useFormStore } from 'stores';
-import type { Element } from 'types';
+import type { Choice, Element } from 'types';
 
 interface PreviewProps {
   formNameValue: string;
   elements: Element[];
+  editable?: boolean;
 }
 
-export default function Preview({ formNameValue, elements }: PreviewProps) {
+export default function Preview({
+  formNameValue,
+  elements,
+  editable = true,
+}: PreviewProps) {
   const removeElement = useFormStore((state) => state.removeElement);
+
+  const [values, setValues] = useState<Record<string, unknown>>({});
+
+  const handleValueChange = (id: string, value: unknown) => {
+    setValues((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const shouldRender = (el: Element) => {
+    if (!el.condition) return true;
+    const targetValue = values[el.condition.targetElementId];
+    return targetValue === el.condition.valueToMatch;
+  };
 
   return (
     <Stack flexGrow={1} gap={2}>
@@ -35,13 +53,25 @@ export default function Preview({ formNameValue, elements }: PreviewProps) {
         </Typography>
 
         {elements.map((el) => {
+          if (!shouldRender(el)) return null;
+
           if (el.type === 'text') {
             return (
               <Stack key={el.id} direction='row' alignItems='center' gap={1}>
-                <TextField label={el.label} fullWidth disabled />
-                <IconButton color='error' onClick={() => removeElement(el.id)}>
-                  <DeleteIcon />
-                </IconButton>
+                <TextField
+                  label={el.label}
+                  fullWidth
+                  value={values[el.id] || ''}
+                  onChange={(e) => handleValueChange(el.id, e.target.value)}
+                />
+                {editable && (
+                  <IconButton
+                    color='error'
+                    onClick={() => removeElement(el.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </Stack>
             );
           }
@@ -55,18 +85,27 @@ export default function Preview({ formNameValue, elements }: PreviewProps) {
                   justifyContent='space-between'
                 >
                   <Typography fontWeight='bold'>{el.label}</Typography>
-                  <IconButton
-                    color='error'
-                    onClick={() => removeElement(el.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  {editable && (
+                    <IconButton
+                      color='error'
+                      onClick={() => removeElement(el.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
                 </Stack>
                 <FormGroup>
-                  {el.choices?.map((choice) => (
+                  {el.choices?.map((choice: Choice) => (
                     <FormControlLabel
                       key={choice.id}
-                      control={<Checkbox disabled />}
+                      control={
+                        <Checkbox
+                          checked={Boolean(values[choice.id])}
+                          onChange={(e) =>
+                            handleValueChange(choice.id, e.target.checked)
+                          }
+                        />
+                      }
                       label={choice.name}
                     />
                   ))}

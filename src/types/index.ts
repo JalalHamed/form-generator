@@ -11,6 +11,7 @@ export interface Element {
   label: string;
   isRequired?: boolean;
   choices?: Choice[];
+  condition?: Condition;
 }
 
 export interface Form {
