@@ -1,19 +1,16 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
-import { FormGeneratorDialog } from './components';
+import { useNavigate } from 'react-router-dom';
 
-export default function App() {
-  const [open, setOpen] = useState(false);
+export default function FormsList() {
+  const navigate = useNavigate();
 
   return (
-    <Stack mx='auto' alignItems='center' py={8} gap={4}>
-      <FormGeneratorDialog open={open} onClose={() => setOpen(false)} />
-
+    <Stack gap={4}>
       <Button
         variant='contained'
         startIcon={<AddIcon />}
-        onClick={() => setOpen(true)}
+        onClick={() => navigate('/generate-form')}
       >
         Add New Form
       </Button>

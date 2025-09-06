@@ -1,3 +1,3 @@
-import { FormGeneratorDialog } from './Dialogs';
+import Layout from './Layouts/Layout';
 
-export { FormGeneratorDialog };
+export { Layout };
