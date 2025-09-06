@@ -2,7 +2,7 @@ import type { Element, Form } from 'types';
 import { v4 as uuid } from 'uuid';
 import { create } from 'zustand';
 
-interface FormState extends Partial<Form> {
+export interface FormState extends Partial<Form> {
   elements: Element[];
   addElement: (element: Element) => void;
   removeElement: (id: string) => void;

@@ -17,10 +17,10 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useFormStore } from 'stores';
+import type { Element } from 'types';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
-import { useFormStore } from '../../stores';
-import type { Element } from '../../types';
 
 interface AddCheckboxProps {
   open: boolean;
@@ -137,7 +137,11 @@ export default function AddCheckboxDialog({
                   )}
                 />
                 {fields.length > 1 && (
-                  <IconButton color='error' onClick={() => remove(index)}>
+                  <IconButton
+                    aria-label='Delete option'
+                    color='error'
+                    onClick={() => remove(index)}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 )}
