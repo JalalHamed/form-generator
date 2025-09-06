@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useFormStore } from 'stores';
 import { expect, vi, type Mock } from 'vitest';
-import AddCheckboxDialog from '../AddCheckbox';
+import AddCheckboxDialog from './AddCheckbox';
 
 interface FormStoreState {
   addElement: (...args: unknown[]) => void;
@@ -32,15 +32,18 @@ beforeEach(() => {
 test('renders dialog and can close', async () => {
   render(<AddCheckboxDialog open={true} handleClose={mockHandleClose} />);
   expect(screen.getByText('Add Checkbox Field')).toBeInTheDocument();
+
   await userEvent.click(screen.getByText('Cancel'));
   expect(mockHandleClose).toHaveBeenCalled();
 });
 
 test('can submit with valid data', async () => {
   render(<AddCheckboxDialog open={true} handleClose={mockHandleClose} />);
+
   await userEvent.type(screen.getByLabelText('Label'), 'My Label');
   await userEvent.type(screen.getByLabelText('Option 1'), 'Option 1');
   await userEvent.click(screen.getByText('Add'));
+
   expect(mockAddElement).toHaveBeenCalled();
   expect(mockHandleClose).toHaveBeenCalled();
 });

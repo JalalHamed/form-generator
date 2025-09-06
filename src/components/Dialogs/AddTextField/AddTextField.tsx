@@ -17,8 +17,8 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
-import { useFormStore } from '../../stores';
-import type { Element } from '../../types';
+import { useFormStore } from '../../../stores';
+import type { Element } from '../../../types';
 
 interface AddTextFieldProps {
   open: boolean;
