@@ -23,7 +23,7 @@ export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
 
       <DialogContent dividers>
         <Stack gap={2}>
-          <TextField label='Label' required autoFocus />
+          <TextField label='Label' autoFocus />
 
           <FormGroup>
             <FormControlLabel control={<Checkbox />} label='Required' />

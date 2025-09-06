@@ -1,5 +1,15 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Divider, Stack, TextField, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import {
+  Button,
+  Divider,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AddCheckboxDialog, AddTextFieldDialog } from '../components';
@@ -13,9 +23,36 @@ export default function FormGenerator() {
 
   const [formName, setFormName] = useState<string>('');
 
+  const { breakpoints } = useTheme();
+  const isMdUp = useMediaQuery(breakpoints.up('md'));
+
+  const initialValues = {
+    formName: '',
+  };
+
+  const isDirty = formName !== initialValues.formName;
+
   return (
-    <Stack maxWidth='md' width='100%' gap={4}>
-      <Stack direction='row' gap={4}>
+    <Stack gap={6}>
+      <Stack direction='row' gap={1}>
+        <Button
+          variant='outlined'
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/')}
+        >
+          Back
+        </Button>
+        <Button
+          variant='outlined'
+          startIcon={<RestartAltIcon />}
+          disabled={!isDirty}
+          onClick={() => setFormName(initialValues.formName)}
+        >
+          Reset
+        </Button>
+      </Stack>
+
+      <Stack direction={{ md: 'row' }} gap={4}>
         <Stack gap={2}>
           <AddTextFieldDialog
             open={openTextFieldDialog}
@@ -28,7 +65,6 @@ export default function FormGenerator() {
 
           <TextField
             label='Form Name'
-            required
             autoFocus
             value={formName}
             onChange={(e) => setFormName(e.target.value)}
@@ -52,7 +88,7 @@ export default function FormGenerator() {
           </Stack>
         </Stack>
 
-        <Divider orientation='vertical' flexItem />
+        <Divider orientation={isMdUp ? 'vertical' : 'horizontal'} flexItem />
 
         <Stack flexGrow={1} gap={1}>
           <Typography>Preview</Typography>
@@ -62,19 +98,12 @@ export default function FormGenerator() {
             borderColor='divider'
             borderRadius={2}
           >
-            <Typography>{formName ? formName : ''}</Typography>
+            <Typography>{formName ? formName : 'Untitled Form'}</Typography>
           </Stack>
         </Stack>
       </Stack>
 
-      <Stack direction='row' gap={2}>
-        <Button onClick={() => navigate('/')} sx={{ flexGrow: 1 }}>
-          Cancel
-        </Button>
-        <Button variant='contained' sx={{ flexGrow: 3 }}>
-          Create
-        </Button>
-      </Stack>
+      <Button variant='contained'>Create</Button>
     </Stack>
   );
 }

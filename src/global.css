@@ -1,16 +1,8 @@
-@font-face {
-  font-family: YekanBakh;
-  font-weight: 400;
-  src: url('/fonts/YekanBakh-Regular.woff') format('woff'),
-    url('/fonts/YekanBakh-Regular.woff2') format('woff2');
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: YekanBakh;
-  font-feature-settings: 'ss01'; /* Change all the numbers to Persian, EASY */
 }
 
 html,

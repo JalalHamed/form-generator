@@ -6,7 +6,7 @@ export default function FormsList() {
   const navigate = useNavigate();
 
   return (
-    <Stack gap={4} maxWidth='md' width='100%'>
+    <Stack gap={4}>
       <Button
         variant='contained'
         startIcon={<AddIcon />}
@@ -21,9 +21,24 @@ export default function FormsList() {
         borderRadius={2}
         p={3}
         alignItems='center'
+        gap={1}
       >
         <Typography>You have not created any forms yet.</Typography>
-        <Typography>Try Adding a new form</Typography>
+        <Typography>
+          Try{' '}
+          <Typography
+            component='span'
+            onClick={() => navigate('generate-form')}
+            sx={{
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              color: 'blue',
+            }}
+          >
+            Adding a new form
+          </Typography>
+          .
+        </Typography>
       </Stack>
     </Stack>
   );

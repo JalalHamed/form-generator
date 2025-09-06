@@ -20,7 +20,7 @@ export default function AddCheckbox({ open, handleClose }: AddCheckboxProps) {
 
       <DialogContent dividers>
         <Stack gap={2}>
-          <TextField label='Label' required autoFocus />
+          <TextField label='Label' autoFocus />
         </Stack>
       </DialogContent>
 
