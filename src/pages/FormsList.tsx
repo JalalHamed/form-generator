@@ -6,7 +6,7 @@ export default function FormsList() {
   const navigate = useNavigate();
 
   return (
-    <Stack gap={4}>
+    <Stack gap={4} maxWidth='md' width='100%'>
       <Button
         variant='contained'
         startIcon={<AddIcon />}
