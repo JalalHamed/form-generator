@@ -1,7 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Divider, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
 import { useFormStore } from '../../stores';
@@ -14,7 +15,10 @@ const schema = yup.object({
 
 export default function FormGenerator() {
   const navigate = useNavigate();
-  const { elements, resetElements } = useFormStore();
+  const { elements, resetElements, setElements } = useFormStore();
+
+  const [searchParams] = useSearchParams();
+  const editingId = searchParams.get('id');
 
   const { breakpoints } = useTheme();
   const isMdUp = useMediaQuery(breakpoints.up('md'));
@@ -34,33 +38,57 @@ export default function FormGenerator() {
 
   const formNameValue = watch('name');
 
-  const handleReset = () => {
+  useEffect(() => {
+    if (!editingId) return;
+
+    const stored = localStorage.getItem('forms');
+    if (!stored) return;
+
+    const forms: Form[] = JSON.parse(stored);
+    const existing = forms.find((f) => f.id === editingId);
+
+    if (existing) {
+      reset({ name: existing.name });
+      setElements(existing.elements);
+    }
+  }, [editingId, reset, setElements]);
+
+  const handleReset = useCallback(() => {
     reset({ name: '' });
     resetElements();
-  };
+  }, [reset, resetElements]);
+
+  useEffect(() => {
+    return () => {
+      handleReset();
+    };
+  }, [handleReset]);
 
   const onSubmit = (data: FormNameField) => {
     if (elements.length === 0) {
-      alert('Please add at least one field before creating the form.');
+      alert('Please add at least one field before saving.');
       return;
     }
 
-    const newForm: Form = {
-      id: uuid(),
-      name: data.name,
-      elements: elements,
-    };
+    const stored = localStorage.getItem('forms');
+    const forms: Form[] = stored ? JSON.parse(stored) : [];
 
-    const existing = localStorage.getItem('forms');
-    const existingForms: Form[] = existing ? JSON.parse(existing) : [];
-
-    const updatedForms = [...existingForms, newForm];
-
-    localStorage.setItem('forms', JSON.stringify(updatedForms));
+    if (editingId) {
+      const updatedForms = forms.map((f) =>
+        f.id === editingId ? { ...f, name: data.name, elements } : f
+      );
+      localStorage.setItem('forms', JSON.stringify(updatedForms));
+    } else {
+      const newForm: Form = {
+        id: uuid(),
+        name: data.name,
+        elements,
+      };
+      localStorage.setItem('forms', JSON.stringify([...forms, newForm]));
+    }
 
     reset({ name: '' });
     resetElements();
-
     navigate('/');
   };
 
@@ -86,7 +114,7 @@ export default function FormGenerator() {
         onClick={handleSubmit(onSubmit)}
         size='large'
       >
-        Create
+        {editingId ? 'Update' : 'Create'}
       </Button>
     </Stack>
   );
