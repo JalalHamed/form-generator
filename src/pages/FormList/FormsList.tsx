@@ -14,6 +14,16 @@ export default function FormsList() {
     if (stored) setForms(JSON.parse(stored));
   }, []);
 
+  const handleDelete = (id: string) => {
+    const updated = forms.filter((f) => f.id !== id);
+    setForms(updated);
+    localStorage.setItem('forms', JSON.stringify(updated));
+  };
+
+  const handleEdit = (form: Form) => {
+    navigate(`/generate-form?id=${form.id}`);
+  };
+
   return (
     <Stack gap={4} maxWidth='sm' width='100%' mx='auto'>
       <Button
@@ -24,7 +34,15 @@ export default function FormsList() {
         Add New Form
       </Button>
 
-      {forms.length === 0 ? <NoForms /> : <RenderForms forms={forms} />}
+      {forms.length === 0 ? (
+        <NoForms />
+      ) : (
+        <RenderForms
+          forms={forms}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </Stack>
   );
 }
