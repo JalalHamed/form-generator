@@ -8,6 +8,7 @@ import {
   DialogTitle,
   FormControlLabel,
   FormGroup,
+  MenuItem,
   Stack,
   TextField,
 } from '@mui/material';
@@ -126,14 +127,14 @@ export default function AddTextFieldDialog({
                     <TextField
                       select
                       label='Based on'
+                      fullWidth
                       {...field}
-                      SelectProps={{ native: true }}
+                      value={field.value || ''}
                     >
-                      <option value=''>Select field</option>
                       {elements.map((el) => (
-                        <option key={el.id} value={el.id}>
+                        <MenuItem key={el.id} value={el.id}>
                           {el.label}
-                        </option>
+                        </MenuItem>
                       ))}
                     </TextField>
                   )}

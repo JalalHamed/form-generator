@@ -1,5 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
+  Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
@@ -26,16 +27,20 @@ export default function Preview({
   const removeElement = useFormStore((state) => state.removeElement);
 
   const [values, setValues] = useState<Record<string, unknown>>({});
+  const [showAll, setShowAll] = useState(false);
 
   const handleValueChange = (id: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [id]: value }));
   };
 
   const shouldRender = (el: Element) => {
+    if (showAll) return true;
     if (!el.condition) return true;
     const targetValue = values[el.condition.targetElementId];
     return targetValue === el.condition.valueToMatch;
   };
+
+  const hasConditionals = elements.some((el) => !!el.condition);
 
   return (
     <Stack flexGrow={1} gap={2}>
@@ -48,9 +53,21 @@ export default function Preview({
         borderRadius={2}
         gap={2}
       >
-        <Typography fontWeight='bold'>
-          {formNameValue || 'Untitled Form'}
-        </Typography>
+        <Stack direction='row' justifyContent='space-between'>
+          <Typography fontWeight='bold'>
+            {formNameValue || 'Untitled Form'}
+          </Typography>
+
+          {hasConditionals && (
+            <Button
+              variant='outlined'
+              onClick={() => setShowAll((prev) => !prev)}
+              size='small'
+            >
+              {showAll ? 'Hide Conditional Fields' : 'Show Conditional Fields'}
+            </Button>
+          )}
+        </Stack>
 
         {elements.map((el) => {
           if (!shouldRender(el)) return null;
