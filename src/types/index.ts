@@ -23,3 +23,7 @@ export interface Condition {
   targetElementId: string;
   valueToMatch: unknown;
 }
+
+export interface FormNameField {
+  name: string;
+}
