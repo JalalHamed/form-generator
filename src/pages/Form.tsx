@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Element, Form } from '../types';
+import type { Element, Form } from 'types';
 
 export default function FormPage() {
   const { id } = useParams<{ id: string }>();

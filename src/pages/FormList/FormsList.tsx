@@ -2,7 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Form } from '../../types';
+import type { Form } from 'types';
 import { NoForms, RenderForms } from './components';
 
 export default function FormsList() {

@@ -1,9 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Stack, TextField, Typography } from '@mui/material';
+import { AddCheckboxDialog, AddTextFieldDialog } from 'components';
 import { useState } from 'react';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
-import { AddCheckboxDialog, AddTextFieldDialog } from '../../../components';
-import type { FormNameField } from '../../../types';
+import type { FormNameField } from 'types';
 
 interface FormProps {
   control: Control<FormNameField, unknown, FormNameField>;

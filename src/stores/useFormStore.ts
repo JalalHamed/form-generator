@@ -1,6 +1,6 @@
+import type { Element, Form } from 'types';
 import { v4 as uuid } from 'uuid';
 import { create } from 'zustand';
-import type { Element, Form } from '../types';
 
 interface FormState extends Partial<Form> {
   elements: Element[];

@@ -2,7 +2,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { Button, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import type { Element } from '../../../types';
+import type { Element } from 'types';
 
 interface TopButtonsProps {
   isDirty: boolean;

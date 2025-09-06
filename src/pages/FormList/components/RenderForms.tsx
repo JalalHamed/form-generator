@@ -1,8 +1,8 @@
-import { Paper, Stack, Typography, IconButton } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { IconButton, Paper, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import type { Form } from '../../../types';
+import type { Form } from 'types';
 
 interface RenderFormsProps {
   forms: Form[];

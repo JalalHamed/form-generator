@@ -12,9 +12,9 @@ import {
   TextField,
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
+import { useFormStore } from 'stores';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
-import { useFormStore } from '../../stores';
 
 interface AddTextFieldProps {
   open: boolean;

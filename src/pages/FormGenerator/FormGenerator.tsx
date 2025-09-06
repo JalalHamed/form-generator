@@ -3,10 +3,10 @@ import { Button, Divider, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useFormStore } from 'stores';
+import type { Form, FormNameField } from 'types';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
-import { useFormStore } from '../../stores';
-import type { Form, FormNameField } from '../../types';
 import { Form as FormComponent, Preview, TopButtons } from './components';
 
 const schema = yup.object({

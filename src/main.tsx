@@ -1,9 +1,9 @@
+import { Layout } from 'components';
+import { Form, FormGenerator, FormsList } from 'pages';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Layout } from './components';
 import './global.css';
-import { Form, FormGenerator, FormsList } from './pages';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

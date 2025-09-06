@@ -8,8 +8,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useFormStore } from '../../../stores';
-import type { Element } from '../../../types';
+import { useFormStore } from 'stores';
+import type { Element } from 'types';
 
 interface PreviewProps {
   formNameValue: string;
