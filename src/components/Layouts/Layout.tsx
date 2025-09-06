@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 export default function Layout() {
   return (
-    <Stack minHeight='100%' p={8} maxWidth='lg' width='100%' mx='auto'>
+    <Stack minHeight='100%' p={8}>
       <Outlet />
     </Stack>
   );

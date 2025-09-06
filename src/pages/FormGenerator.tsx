@@ -1,3 +1,4 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -11,39 +12,80 @@ import {
   useTheme,
 } from '@mui/material';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuid } from 'uuid';
+import * as yup from 'yup';
 import { AddCheckboxDialog, AddTextFieldDialog } from '../components';
 import { useFormStore } from '../stores';
+import type { Form } from '../types';
+
+const schema = yup.object({
+  name: yup.string().required('Form Name is required'),
+});
+
+interface FormNameField {
+  name: string;
+}
 
 export default function FormGenerator() {
   const navigate = useNavigate();
-
   const { elements, resetElements } = useFormStore();
-
-  console.log(elements);
 
   const [openTextFieldDialog, setOpenTextFieldDialog] =
     useState<boolean>(false);
   const [openCheckboxDialog, setOpenCheckboxDialog] = useState<boolean>(false);
 
-  const [formName, setFormName] = useState<string>('');
-
   const { breakpoints } = useTheme();
   const isMdUp = useMediaQuery(breakpoints.up('md'));
 
-  const initialValues = {
-    formName: '',
-  };
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isDirty },
+  } = useForm<FormNameField>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+    },
+  });
 
-  const isDirty = formName !== initialValues.formName;
+  const formNameValue = watch('name');
 
   const handleReset = () => {
-    setFormName(initialValues.formName);
+    reset({ name: '' });
     resetElements();
   };
 
+  const onSubmit = (data: FormNameField) => {
+    if (elements.length === 0) {
+      alert('Please add at least one field before creating the form.');
+      return;
+    }
+
+    const newForm: Form = {
+      id: uuid(),
+      name: data.name,
+      elements: elements,
+    };
+
+    const existing = localStorage.getItem('forms');
+    const existingForms: Form[] = existing ? JSON.parse(existing) : [];
+
+    const updatedForms = [...existingForms, newForm];
+
+    localStorage.setItem('forms', JSON.stringify(updatedForms));
+
+    reset({ name: '' });
+    resetElements();
+
+    navigate('/');
+  };
+
   return (
-    <Stack gap={6}>
+    <Stack gap={6} maxWidth='md' width='100%' mx='auto'>
       <Stack direction='row' gap={1}>
         <Button
           variant='outlined'
@@ -73,11 +115,18 @@ export default function FormGenerator() {
             handleClose={() => setOpenCheckboxDialog(false)}
           />
 
-          <TextField
-            label='Form Name'
-            autoFocus
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
+          <Controller
+            name='name'
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label='Form Name'
+                autoFocus
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
+            )}
           />
 
           <Stack direction='row' gap={2}>
@@ -110,12 +159,12 @@ export default function FormGenerator() {
             gap={2}
           >
             <Typography fontWeight='bold'>
-              {formName ? formName : 'Untitled Form'}
+              {formNameValue || 'Untitled Form'}
             </Typography>
 
             {elements.map((el) =>
               el.type === 'text' ? (
-                <TextField key={el.id} label={el.label} />
+                <TextField key={el.id} label={el.label} disabled />
               ) : (
                 <></>
               )
@@ -124,7 +173,13 @@ export default function FormGenerator() {
         </Stack>
       </Stack>
 
-      <Button variant='contained'>Create</Button>
+      <Button
+        type='submit'
+        variant='contained'
+        onClick={handleSubmit(onSubmit)}
+      >
+        Create
+      </Button>
     </Stack>
   );
 }
