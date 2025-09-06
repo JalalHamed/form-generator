@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Stack, TextField } from '@mui/material';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { AddCheckboxDialog, AddTextFieldDialog } from '../../../components';
@@ -17,6 +17,8 @@ export default function Form({ control, errors }: FormProps) {
 
   return (
     <Stack gap={2}>
+      <Typography textAlign='center'>Make Changes</Typography>
+
       <AddTextFieldDialog
         open={openTextFieldDialog}
         handleClose={() => setOpenTextFieldDialog(false)}

@@ -59,7 +59,7 @@ export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={open} onClose={handleClose} fullWidth>
       <DialogTitle>Add Text Field</DialogTitle>
 
       <form onSubmit={handleSubmit(onSubmit)}>
