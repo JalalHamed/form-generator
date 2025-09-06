@@ -1,3 +1,4 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
   Checkbox,
@@ -10,8 +11,9 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { v4 as uuid } from 'uuid';
+import * as yup from 'yup';
 import { useFormStore } from '../../stores';
 
 interface AddTextFieldProps {
@@ -19,61 +21,102 @@ interface AddTextFieldProps {
   handleClose: () => void;
 }
 
+interface FormValues {
+  label: string;
+  required: boolean;
+}
+
+const schema = yup.object({
+  label: yup.string().required('Label is required'),
+  required: yup.boolean().default(false),
+});
+
 export default function AddTextField({ open, handleClose }: AddTextFieldProps) {
   const addElement = useFormStore((state) => state.addElement);
 
-  const [label, setLabel] = useState('');
-  const [required, setRequired] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      label: '',
+      required: false,
+    },
+  });
 
-  const handleAdd = () => {
+  const onSubmit = (data: FormValues) => {
     addElement({
       id: uuid(),
       type: 'text',
-      label,
-      isRequired: required,
+      label: data.label,
+      isRequired: data.required,
     });
+    reset();
     handleClose();
-    setLabel('');
-    setRequired(false);
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Add Text Field</DialogTitle>
 
-      <DialogContent dividers>
-        <Stack gap={2}>
-          <TextField
-            label='Label'
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            inputRef={(input) => {
-              if (input) input.focus();
-            }}
-          />
-
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={required}
-                  onChange={(e) => setRequired(e.target.checked)}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent dividers>
+          <Stack gap={2}>
+            <Controller
+              name='label'
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label='Label'
+                  autoFocus
+                  error={!!errors.label}
+                  helperText={errors.label?.message}
+                  inputRef={(input) => {
+                    if (input) input.focus();
+                  }}
                 />
-              }
-              label='Required'
+              )}
             />
-          </FormGroup>
-        </Stack>
-      </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} sx={{ flexGrow: 1 }}>
-          Cancel
-        </Button>
-        <Button onClick={handleAdd} variant='contained' sx={{ flexGrow: 3 }}>
-          Add
-        </Button>
-      </DialogActions>
+            <FormGroup>
+              <Controller
+                name='required'
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label='Required'
+                  />
+                )}
+              />
+            </FormGroup>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              reset();
+              handleClose();
+            }}
+            sx={{ flexGrow: 1 }}
+          >
+            Cancel
+          </Button>
+          <Button type='submit' variant='contained' sx={{ flexGrow: 3 }}>
+            Add
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }
