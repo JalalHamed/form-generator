@@ -1,11 +1,14 @@
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Checkbox,
   FormControlLabel,
   FormGroup,
+  IconButton,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import { useFormStore } from '../../../stores';
 import type { Element } from '../../../types';
 
 interface PreviewProps {
@@ -14,6 +17,8 @@ interface PreviewProps {
 }
 
 export default function Preview({ formNameValue, elements }: PreviewProps) {
+  const removeElement = useFormStore((state) => state.removeElement);
+
   return (
     <Stack flexGrow={1} gap={2}>
       <Typography textAlign='center'>Preview</Typography>
@@ -31,18 +36,37 @@ export default function Preview({ formNameValue, elements }: PreviewProps) {
 
         {elements.map((el) => {
           if (el.type === 'text') {
-            return <TextField key={el.id} label={el.label} fullWidth />;
+            return (
+              <Stack key={el.id} direction='row' alignItems='center' gap={1}>
+                <TextField label={el.label} fullWidth disabled />
+                <IconButton color='error' onClick={() => removeElement(el.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Stack>
+            );
           }
 
           if (el.type === 'checkbox') {
             return (
-              <Stack key={el.id}>
-                <Typography fontWeight='bold'>{el.label}</Typography>
+              <Stack key={el.id} gap={1}>
+                <Stack
+                  direction='row'
+                  alignItems='center'
+                  justifyContent='space-between'
+                >
+                  <Typography fontWeight='bold'>{el.label}</Typography>
+                  <IconButton
+                    color='error'
+                    onClick={() => removeElement(el.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Stack>
                 <FormGroup>
                   {el.choices?.map((choice) => (
                     <FormControlLabel
                       key={choice.id}
-                      control={<Checkbox />}
+                      control={<Checkbox disabled />}
                       label={choice.name}
                     />
                   ))}
