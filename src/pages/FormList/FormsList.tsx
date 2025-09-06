@@ -30,6 +30,7 @@ export default function FormsList() {
         variant='contained'
         startIcon={<AddIcon />}
         onClick={() => navigate('/generate-form')}
+        size='large'
       >
         Add New Form
       </Button>

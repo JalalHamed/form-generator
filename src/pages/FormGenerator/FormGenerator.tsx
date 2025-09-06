@@ -84,6 +84,7 @@ export default function FormGenerator() {
         type='submit'
         variant='contained'
         onClick={handleSubmit(onSubmit)}
+        size='large'
       >
         Create
       </Button>
