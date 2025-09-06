@@ -13,9 +13,14 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AddCheckboxDialog, AddTextFieldDialog } from '../components';
+import { useFormStore } from '../stores';
 
 export default function FormGenerator() {
   const navigate = useNavigate();
+
+  const { elements, resetElements } = useFormStore();
+
+  console.log(elements);
 
   const [openTextFieldDialog, setOpenTextFieldDialog] =
     useState<boolean>(false);
@@ -32,6 +37,11 @@ export default function FormGenerator() {
 
   const isDirty = formName !== initialValues.formName;
 
+  const handleReset = () => {
+    setFormName(initialValues.formName);
+    resetElements();
+  };
+
   return (
     <Stack gap={6}>
       <Stack direction='row' gap={1}>
@@ -45,8 +55,8 @@ export default function FormGenerator() {
         <Button
           variant='outlined'
           startIcon={<RestartAltIcon />}
-          disabled={!isDirty}
-          onClick={() => setFormName(initialValues.formName)}
+          disabled={!isDirty && elements.length === 0}
+          onClick={handleReset}
         >
           Reset
         </Button>
@@ -97,8 +107,19 @@ export default function FormGenerator() {
             border='1px solid'
             borderColor='divider'
             borderRadius={2}
+            gap={2}
           >
-            <Typography>{formName ? formName : 'Untitled Form'}</Typography>
+            <Typography fontWeight='bold'>
+              {formName ? formName : 'Untitled Form'}
+            </Typography>
+
+            {elements.map((el) =>
+              el.type === 'text' ? (
+                <TextField key={el.id} label={el.label} />
+              ) : (
+                <></>
+              )
+            )}
           </Stack>
         </Stack>
       </Stack>
