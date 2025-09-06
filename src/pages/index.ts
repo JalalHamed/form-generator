@@ -1,4 +1,4 @@
 import FormGenerator from './FormGenerator';
-import FormsList from './FormsList';
+import FormsList from './FormList/FormsList';
 
 export { FormGenerator, FormsList };
