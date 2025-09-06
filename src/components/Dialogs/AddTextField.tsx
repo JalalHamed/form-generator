@@ -1,4 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
+import AddIcon from '@mui/icons-material/Add';
 import {
   Button,
   Checkbox,
@@ -113,8 +114,9 @@ export default function AddTextFieldDialog({
               <Button
                 variant='outlined'
                 onClick={() => setShowConditionFields(!showConditionFields)}
+                startIcon={<AddIcon />}
               >
-                Conditional Rendering
+                Add Conditional Rendering
               </Button>
             )}
 
@@ -144,7 +146,12 @@ export default function AddTextFieldDialog({
                   name='conditionValue'
                   control={control}
                   render={({ field }) => (
-                    <TextField {...field} label='If value equals to' />
+                    <TextField
+                      {...field}
+                      label='If value equals to'
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
                   )}
                 />
               </>
