@@ -1,3 +1,4 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,15 +12,53 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { Controller, useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Element, Form } from 'types';
+import type { Choice, Element, Form } from 'types';
+import * as yup from 'yup';
+
+type FormValues = Record<string, string | string[] | boolean | undefined>;
 
 export default function FormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [form, setForm] = useState<Form | null>(null);
 
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const createValidationSchema = (elements: Element[]) =>
+    yup.object(
+      Object.fromEntries(
+        elements.map((el) => {
+          if (el.type === 'text') {
+            return [
+              el.id,
+              el.isRequired
+                ? yup.string().required(`${el.label} is required`)
+                : yup.string().optional(),
+            ];
+          }
+          if (el.type === 'checkbox' && el.isRequired) {
+            return [
+              el.id,
+              yup.array().of(yup.string()).min(1, `${el.label} is required`),
+            ];
+          }
+          return [el.id, yup.mixed().notRequired()];
+        })
+      )
+    ) as yup.ObjectSchema<FormValues>;
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>({
+    resolver: yupResolver(createValidationSchema(form?.elements || [])),
+    defaultValues: {},
+  });
+
+  const watchedValues = watch();
 
   useEffect(() => {
     const stored = localStorage.getItem('forms');
@@ -29,21 +68,20 @@ export default function FormPage() {
       if (found) {
         setForm(found);
 
-        const initialValues: Record<string, unknown> = {};
+        const defaultValues: FormValues = {};
         found.elements.forEach((el) => {
-          if (el.type === 'text') initialValues[el.id] = '';
-          if (el.type === 'checkbox') {
-            el.choices?.forEach((c) => {
-              initialValues[c.id] = false;
-            });
+          if (el.type === 'text') {
+            defaultValues[el.id] = '';
+          } else if (el.type === 'checkbox') {
+            defaultValues[el.id] = [];
           }
         });
-        setValues(initialValues);
+        reset(defaultValues);
       } else {
         navigate('/');
       }
     }
-  }, [id, navigate]);
+  }, [id, navigate, reset]);
 
   const handleDeleteForm = () => {
     if (!form) return;
@@ -61,17 +99,81 @@ export default function FormPage() {
     navigate(`/generate-form?id=${form.id}`);
   };
 
-  const handleValueChange = (id: string, value: unknown) => {
-    setValues((prev) => ({ ...prev, [id]: value }));
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    console.log('Form submitted:', data);
   };
 
   const shouldRender = (el: Element) => {
     if (!el.condition) return true;
-    const targetValue = values[el.condition.targetElementId];
+    const targetValue = watchedValues[el.condition.targetElementId];
     return targetValue === el.condition.valueToMatch;
   };
 
   if (!form) return null;
+
+  const renderField = (el: Element) => {
+    switch (el.type) {
+      case 'text':
+        return (
+          <Controller
+            key={el.id}
+            name={el.id}
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label={el.label}
+                fullWidth
+                error={!!errors[el.id]}
+                helperText={errors[el.id]?.message as string | undefined}
+              />
+            )}
+          />
+        );
+      case 'checkbox':
+        return (
+          <Stack key={el.id} gap={1} width='100%'>
+            <Typography fontWeight='bold'>{el.label}</Typography>
+            <Controller
+              name={el.id}
+              control={control}
+              render={({ field }) => (
+                <FormGroup>
+                  {el.choices?.map((c: Choice) => (
+                    <FormControlLabel
+                      key={c.id}
+                      control={
+                        <Checkbox
+                          checked={((field.value as string[]) || []).includes(
+                            c.id
+                          )}
+                          onChange={(e) => {
+                            const value = e.target.checked
+                              ? [...((field.value as string[]) || []), c.id]
+                              : ((field.value as string[]) || []).filter(
+                                  (v) => v !== c.id
+                                );
+                            field.onChange(value);
+                          }}
+                        />
+                      }
+                      label={c.name}
+                    />
+                  ))}
+                </FormGroup>
+              )}
+            />
+            {errors[el.id] && (
+              <Typography variant='body2' color='error'>
+                {errors[el.id]?.message as string}
+              </Typography>
+            )}
+          </Stack>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Stack gap={6} maxWidth='sm' width='100%' mx='auto'>
@@ -102,57 +204,29 @@ export default function FormPage() {
         </Stack>
       </Stack>
 
-      <Stack
-        p={2}
-        border='1px solid'
-        borderColor='divider'
-        borderRadius={2}
-        gap={2}
-      >
-        <Typography fontWeight='bold'>{form.name}</Typography>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack
+          p={2}
+          border='1px solid'
+          borderColor='divider'
+          borderRadius={2}
+          gap={2}
+        >
+          <Typography fontWeight='bold'>{form.name}</Typography>
 
-        {form.elements.map((el) => {
-          if (!shouldRender(el)) return null;
+          {form.elements.map((el) => {
+            if (!shouldRender(el)) return null;
 
-          if (el.type === 'text') {
-            return (
-              <TextField
-                key={el.id}
-                label={el.label}
-                value={values[el.id] || ''}
-                onChange={(e) => handleValueChange(el.id, e.target.value)}
-                fullWidth
-              />
-            );
-          }
+            return renderField(el);
+          })}
 
-          if (el.type === 'checkbox') {
-            return (
-              <Stack key={el.id} gap={1}>
-                <Typography fontWeight='bold'>{el.label}</Typography>
-                <FormGroup>
-                  {el.choices?.map((choice) => (
-                    <FormControlLabel
-                      key={choice.id}
-                      control={
-                        <Checkbox
-                          checked={Boolean(values[choice.id])}
-                          onChange={(e) =>
-                            handleValueChange(choice.id, e.target.checked)
-                          }
-                        />
-                      }
-                      label={choice.name}
-                    />
-                  ))}
-                </FormGroup>
-              </Stack>
-            );
-          }
-
-          return null;
-        })}
-      </Stack>
+          {form.elements.length > 0 && (
+            <Button variant='outlined' type='submit'>
+              Submit
+            </Button>
+          )}
+        </Stack>
+      </form>
     </Stack>
   );
 }
