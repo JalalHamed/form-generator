@@ -211,10 +211,11 @@ export default function AddCheckboxDialog({
               setShowConditionFields(false);
               handleClose();
             }}
+            sx={{ flexGrow: 1 }}
           >
             Cancel
           </Button>
-          <Button type='submit' variant='contained'>
+          <Button type='submit' variant='contained' sx={{ flexGrow: 3 }}>
             Add
           </Button>
         </DialogActions>
